@@ -2,11 +2,10 @@
 
 namespace johnitvn\jsonquery\schema;
 
-use johnitvn\jsonquery\JsonUtils as Utils;
+use \johnitvn\jsonquery\JsonUtils;
 
 /**
- * The Constraints class
- * @author John Martin <john.itvn@gmail.com>
+ * @author John Martin <johnitvn@gmail.com>
  * @since 1.0.0
  */
 class Constraints {
@@ -19,7 +18,7 @@ class Constraints {
     }
 
     public function validate($data, $schema, $key = null) {
-        $this->path = Utils::pathAdd($this->path, $key);
+        $this->path = JsonUtils::pathAdd($this->path, $key);
 
         $this->validateCommon($data, $schema);
         $type = gettype($data);
@@ -47,7 +46,7 @@ class Constraints {
 
         foreach ($common as $name) {
 
-            if ($value = Utils::get($schema, $name)) {
+            if ($value = JsonUtils::get($schema, $name)) {
 
                 switch ($name) {
                     case 'enum':
@@ -90,7 +89,7 @@ class Constraints {
         }
 
         # additionalProperties
-        $additional = Utils::get($schema, 'additionalProperties', true);
+        $additional = JsonUtils::get($schema, 'additionalProperties', true);
 
         if (false === $additional) {
             $this->validateObjectWork($data, $schema);
@@ -115,17 +114,17 @@ class Constraints {
         }
 
         # uniqueItems
-        if ($value = Utils::get($schema, 'uniqueItems', false)) {
-            if (!Utils::uniqueArray($data, true)) {
+        if ($value = JsonUtils::get($schema, 'uniqueItems', false)) {
+            if (!JsonUtils::uniqueArray($data, true)) {
                 $this->throwError('contains duplicate values');
             }
         }
 
         # items
-        $items = Utils::get($schema, 'items', array());
+        $items = JsonUtils::get($schema, 'items', array());
 
         # additionalItems
-        $additional = Utils::get($schema, 'additionalItems', true);
+        $additional = JsonUtils::get($schema, 'additionalItems', true);
 
         if (false === $additional && is_array($items)) {
             if (count($data) > count($items)) {
@@ -141,7 +140,7 @@ class Constraints {
         if (isset($schema->maximum)) {
             $max = $schema->maximum;
 
-            if ($exclusive = Utils::get($schema, 'exclusiveMaximum', false)) {
+            if ($exclusive = JsonUtils::get($schema, 'exclusiveMaximum', false)) {
                 $valid = $data < $max;
             } else {
                 $valid = $data <= $max;
@@ -158,7 +157,7 @@ class Constraints {
         if (isset($schema->minimum)) {
             $min = $schema->minimum;
 
-            if ($exclusive = Utils::get($schema, 'exclusiveMinimum', false)) {
+            if ($exclusive = JsonUtils::get($schema, 'exclusiveMinimum', false)) {
                 $valid = $data > $min;
             } else {
                 $valid = $data >= $min;
@@ -204,7 +203,7 @@ class Constraints {
         $result = false;
 
         foreach ((array) $enum as $value) {
-            if ($result = Utils::equals($value, $data)) {
+            if ($result = JsonUtils::equals($value, $data)) {
                 break;
             }
         }
@@ -219,7 +218,7 @@ class Constraints {
         $result = false;
 
         foreach ($types as $type) {
-            if (Utils::checkType($type, $data)) {
+            if (JsonUtils::checkType($type, $data)) {
                 $result = true;
                 break;
             }
@@ -283,7 +282,7 @@ class Constraints {
 
     protected function validateObjectWork($data, $schema) {
         $set = (array) $data;
-        $p = Utils::get($schema, 'properties', new \stdClass());
+        $p = JsonUtils::get($schema, 'properties', new \stdClass());
 
         foreach ($p as $key => $value) {
             if (isset($set[$key])) {
@@ -291,7 +290,7 @@ class Constraints {
             }
         }
 
-        $pp = Utils::get($schema, 'patternProperties', new \stdClass());
+        $pp = JsonUtils::get($schema, 'patternProperties', new \stdClass());
         $setCopy = $set;
 
         foreach ($setCopy as $key => $value) {
@@ -314,8 +313,8 @@ class Constraints {
             $additional = new \stdClass();
         }
 
-        $p = Utils::get($schema, 'properties', new \stdClass());
-        $pp = Utils::get($schema, 'patternProperties', new \stdClass());
+        $p = JsonUtils::get($schema, 'properties', new \stdClass());
+        $pp = JsonUtils::get($schema, 'patternProperties', new \stdClass());
 
         foreach ($data as $key => $value) {
 
@@ -438,7 +437,7 @@ class Constraints {
         $count = count($data);
         for ($i = 0; $i < $count; ++$i) {
             for ($j = $i + 1; $j < $count; ++$j) {
-                if (Utils::equals($data[$i], $data[$j])) {
+                if (JsonUtils::equals($data[$i], $data[$j])) {
                     return false;
                 }
             }

@@ -3,7 +3,7 @@
 namespace johnitvn\jsonquery;
 
 /**
- * @author John Martin <john.itvn@gmail.com>
+ * @author John Martin <johnitvn@gmail.com>
  * @since 1.0.0
  */
 class JsonDocument {
@@ -17,7 +17,8 @@ class JsonDocument {
     private $validator;
 
     public function loadData($data, $noException = false) {
-        $this->data = $this->getInput($data, false, $noException) ? JsonUtils::dataCopy($data) : null;
+        $data = $this->getInput($data, false, $noException);
+        $this->data = $data ? JsonUtils::dataCopy($data) : null;
         $this->workingData = null;
         return empty($this->lastError);
     }

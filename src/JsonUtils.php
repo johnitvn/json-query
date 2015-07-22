@@ -3,7 +3,7 @@
 namespace johnitvn\jsonquery;
 
 /**
- * @author John Martin <john.itvn@gmail.com>
+ * @author John Martin <johnitvn@gmail.com>
  * @since 1.0.0
  */
 class JsonUtils {
@@ -25,8 +25,6 @@ class JsonUtils {
 
         if ('number' === $type) {
             $result = is_float($value) || is_integer($value);
-        } elseif ('integer' === $type) {
-            $result = is_integer($value) || (is_float($value) && $value == round($value));
         } elseif ('boolean' === $type) {
             $result = is_bool($value);
         } elseif (function_exists($func = 'is_' . $type)) {
@@ -73,7 +71,7 @@ class JsonUtils {
                 $out[] = $data[$i];
 
                 for ($j = $i + 1; $j < $count; ++$j) {
-                    if (Utils::equals($data[$i], $data[$j])) {
+                    if (JsonUtils::equals($data[$i], $data[$j])) {
                         $equals[] = $j;
                         if ($check) {
                             return false;
@@ -146,7 +144,7 @@ class JsonUtils {
     }
 
     public static function dataOrder($data, $schema) {
-        if (is_object($data) && ($properties = Utils::get($schema, 'properties'))) {
+        if (is_object($data) && ($properties = JsonUtils::get($schema, 'properties'))) {
             $result = array();
 
             foreach ($properties as $key => $value) {
@@ -156,7 +154,7 @@ class JsonUtils {
                 }
             }
             $result = (object) array_merge($result, (array) $data);
-        } elseif (is_array($data) && ($items = Utils::get($schema, 'items'))) {
+        } elseif (is_array($data) && ($items = JsonUtils::get($schema, 'items'))) {
             $objSchema = is_object($schema->items) ? $schema->items : null;
 
             foreach ($data as $item) {

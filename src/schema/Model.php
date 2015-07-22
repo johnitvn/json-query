@@ -2,11 +2,10 @@
 
 namespace johnitvn\jsonquery\schema;
 
-use johnitvn\jsonquery\JsonUtils as Utils;
+use \johnitvn\jsonquery\JsonUtils;
 
 /**
- * The model class
- * @author John Martin <john.itvn@gmail.com>
+ * @author John Martin <johnitvn@gmail.com>
  * @since 1.0.0
  */
 class Model {
@@ -19,7 +18,7 @@ class Model {
     protected $references = array();
 
     public function __construct($input) {
-        $this->data = Utils::dataCopy((object) $input, array($this, 'initCallback'));
+        $this->data = JsonUtils::dataCopy((object) $input, array($this, 'initCallback'));
         $this->resolveReferences();
     }
 
@@ -31,14 +30,14 @@ class Model {
             if ('array' === $type) {
                 $key = (int) $key;
             }
-            $schema = Utils::get($schema, $key);
+            $schema = JsonUtils::get($schema, $key);
         }
 
         return $schema;
     }
 
     public function initCallback($data) {
-        if ($ref = Utils::get($data, '$ref')) {
+        if ($ref = JsonUtils::get($data, '$ref')) {
 
             if (is_string($ref) && 0 === strpos($ref, '#')) {
                 $this->references[$ref] = null;
@@ -51,8 +50,8 @@ class Model {
     }
 
     public function resolveCallback($data) {
-        if ($ref = Utils::get($data, '$ref')) {
-            $data = Utils::get($this->references, $ref);
+        if ($ref = JsonUtils::get($data, '$ref')) {
+            $data = JsonUtils::get($this->references, $ref);
         }
 
         return $data;
@@ -62,7 +61,7 @@ class Model {
         if ($this->references) {
 
             foreach (array_keys($this->references) as $ref) {
-                $keys = Utils::pathDecode($ref);
+                $keys = JsonUtils::pathDecode($ref);
 
                 if ($schema = $this->find($this->data, $keys)) {
                     $this->references[$ref] = $schema;
@@ -75,7 +74,7 @@ class Model {
                 $this->references[$ref] = $this->resolve($schema);
             }
 
-            $this->data = Utils::dataCopy($this->data, array($this, 'resolveCallback'));
+            $this->data = JsonUtils::dataCopy($this->data, array($this, 'resolveCallback'));
             $this->references = array();
         }
     }
@@ -83,12 +82,12 @@ class Model {
     private function resolve($schema, $parents = array()) {
         $result = $schema;
 
-        if ($ref = Utils::get($schema, '$ref')) {
-            $refSchema = Utils::get($this->references, $ref);
+        if ($ref = JsonUtils::get($schema, '$ref')) {
+            $refSchema = JsonUtils::get($this->references, $ref);
 
             if (in_array($ref, $parents)) {
                 throw new \RuntimeException('Circular reference to ref ' . $ref);
-            } elseif (Utils::get($refSchema, '$ref')) {
+            } elseif (JsonUtils::get($refSchema, '$ref')) {
                 $parents[] = $ref;
                 $result = $this->resolve($refSchema, $parents);
             } else {

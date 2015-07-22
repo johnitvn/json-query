@@ -3,8 +3,7 @@
 namespace johnitvn\jsonquery\schema;
 
 /**
- * The validator for validate json schema
- * @author John Martin <john.itvn@gmail.com>
+ * @author John Martin <johnitvn@gmail.com>
  * @since 1.0.0
  */
 class Validator {
