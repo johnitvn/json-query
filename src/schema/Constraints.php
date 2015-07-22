@@ -5,21 +5,20 @@ namespace johnitvn\jsonquery\schema;
 use johnitvn\jsonquery\JsonUtils as Utils;
 
 /**
+ * The Constraints class
  * @author John Martin <john.itvn@gmail.com>
  * @since 1.0.0
  */
-class Constraints
-{
+class Constraints {
+
     protected $path;
     protected $lax;
 
-    public function __construct($lax)
-    {
+    public function __construct($lax) {
         $this->lax = $lax;
     }
 
-    public function validate($data, $schema, $key = null)
-    {
+    public function validate($data, $schema, $key = null) {
         $this->path = Utils::pathAdd($this->path, $key);
 
         $this->validateCommon($data, $schema);
@@ -33,7 +32,7 @@ class Constraints
                 $this->validateArray($data, $schema);
                 break;
             case 'double':
-                # no break
+            # no break
             case 'integer':
                 $this->validateNumber($data, $schema);
                 break;
@@ -43,8 +42,7 @@ class Constraints
         }
     }
 
-    protected function validateCommon($data, $schema)
-    {
+    protected function validateCommon($data, $schema) {
         $common = array('enum', 'type', 'allOf', 'anyOf', 'oneOf', 'not');
 
         foreach ($common as $name) {
@@ -68,15 +66,14 @@ class Constraints
         }
     }
 
-    protected function validateObject($data, $schema)
-    {
+    protected function validateObject($data, $schema) {
 
         # maxProperties
         if (isset($schema->maxProperties)) {
             $this->validateMaxMin($data, $schema->maxProperties, true);
         }
 
-       if (!$this->lax) {
+        if (!$this->lax) {
 
             # minProperties
             if (isset($schema->minProperties)) {
@@ -84,13 +81,12 @@ class Constraints
             }
 
             if (isset($schema->required)) {
-                 foreach ((array) $schema->required as $name) {
+                foreach ((array) $schema->required as $name) {
                     if (!isset($data->$name)) {
                         $this->throwError(sprintf("is missing required property '%s'", $name));
                     }
                 }
             }
-
         }
 
         # additionalProperties
@@ -103,8 +99,7 @@ class Constraints
         $this->validateObjectChildren($data, $schema, $additional);
     }
 
-    protected function validateArray($data, $schema)
-    {
+    protected function validateArray($data, $schema) {
 
         # maxItems
         if (isset($schema->maxItems)) {
@@ -136,13 +131,12 @@ class Constraints
             if (count($data) > count($items)) {
                 $this->throwError('contains more elements than are allowed');
             }
-         }
+        }
 
         $this->validateArrayChildren($data, $items, $additional);
     }
 
-    protected function validateNumber($data, $schema)
-    {
+    protected function validateNumber($data, $schema) {
         # maximum
         if (isset($schema->maximum)) {
             $max = $schema->maximum;
@@ -156,7 +150,7 @@ class Constraints
             if (!$valid) {
                 $error = 'value must be less than ';
                 $error .= $exclusive ? 'or equal to ' : '';
-                $this->throwError($error.$max);
+                $this->throwError($error . $max);
             }
         }
 
@@ -173,13 +167,12 @@ class Constraints
             if (!$valid) {
                 $error = 'value must be greater than ';
                 $error .= $exclusive ? '' : 'or equal to ';
-                $this->throwError($error.$min);
+                $this->throwError($error . $min);
             }
         }
     }
 
-    protected function validateString($data, $schema)
-    {
+    protected function validateString($data, $schema) {
         # maxLength
         if (isset($schema->maxLength)) {
             if (strlen($data) > $schema->maxLength) {
@@ -207,8 +200,7 @@ class Constraints
         }
     }
 
-    protected function validateEnum($enum, $data)
-    {
+    protected function validateEnum($enum, $data) {
         $result = false;
 
         foreach ((array) $enum as $value) {
@@ -218,12 +210,11 @@ class Constraints
         }
 
         if (!$result) {
-            $this->throwError('value not found in enumeration '.json_encode($enum));
+            $this->throwError('value not found in enumeration ' . json_encode($enum));
         }
     }
 
-    protected function validateType($type, $data)
-    {
+    protected function validateType($type, $data) {
         $types = (array) $type;
         $result = false;
 
@@ -239,16 +230,13 @@ class Constraints
         }
     }
 
-    protected function validateNot($not, $data)
-    {
-        if ($this->validateChild($data, $not))
-        {
+    protected function validateNot($not, $data) {
+        if ($this->validateChild($data, $not)) {
             $this->throwError('must not validate against this schema');
         }
     }
 
-    protected function validateOf($type, $value, $data)
-    {
+    protected function validateOf($type, $value, $data) {
         $matches = 0;
         $result = false;
 
@@ -279,8 +267,7 @@ class Constraints
         }
     }
 
-    protected function validateMaxMin($data, $value, $isMax)
-    {
+    protected function validateMaxMin($data, $value, $isMax) {
         $count = count((array) $data);
 
         if ($isMax && $count > $value) {
@@ -294,8 +281,7 @@ class Constraints
         }
     }
 
-    protected function validateObjectWork($data, $schema)
-    {
+    protected function validateObjectWork($data, $schema) {
         $set = (array) $data;
         $p = Utils::get($schema, 'properties', new \stdClass());
 
@@ -310,7 +296,7 @@ class Constraints
 
         foreach ($setCopy as $key => $value) {
 
-             foreach ($pp as $regex => $val) {
+            foreach ($pp as $regex => $val) {
                 if ($this->match($regex, $key)) {
                     unset($set[$key]);
                     break;
@@ -323,8 +309,7 @@ class Constraints
         }
     }
 
-    protected function validateObjectChildren($data, $schema, $additional)
-    {
+    protected function validateObjectChildren($data, $schema, $additional) {
         if (true === $additional) {
             $additional = new \stdClass();
         }
@@ -350,14 +335,13 @@ class Constraints
                 $child[] = $additional;
             }
 
-            foreach($child as $subSchema) {
+            foreach ($child as $subSchema) {
                 $this->validateChild($value, $subSchema, $key);
             }
         }
     }
 
-    protected function validateArrayChildren($data, $items, $additional)
-    {
+    protected function validateArrayChildren($data, $items, $additional) {
         if (null === $items) {
             $items = new \stdClass();
         }
@@ -386,8 +370,7 @@ class Constraints
         }
     }
 
-    protected function validateChild($data, $schema, $key = null)
-    {
+    protected function validateChild($data, $schema, $key = null) {
         $result = true;
         $currentPath = $this->path;
 
@@ -406,54 +389,52 @@ class Constraints
         return $result;
     }
 
-    protected function validateFormat($data, $format)
-    {
+    protected function validateFormat($data, $format) {
         switch ($format) {
 
             case 'date-time':
                 $p = '/^\d{4}-\d{2}-\d{2}[T| ]\d{2}:\d{2}:\d{2}(\.\d{1})?(Z|[\+|-]\d{2}:\d{2})?$/i';
                 if (!preg_match($p, $data, $match) || false === strtotime($data)) {
-                    $this->throwError('Invalid date-time, '.json_encode($data));
+                    $this->throwError('Invalid date-time, ' . json_encode($data));
                 }
                 break;
 
             case 'email':
                 if (null === filter_var($data, FILTER_VALIDATE_EMAIL, FILTER_NULL_ON_FAILURE)) {
-                    $this->throwError('Invalid email, '.json_encode($data));
+                    $this->throwError('Invalid email, ' . json_encode($data));
                 }
                 break;
 
             case 'hostname':
                 if (!preg_match('/^[_a-z]+\.([_a-z]+\.?)+$/i', $data)) {
-                    $this->throwError('Invalid hostname, '.json_encode($data));
+                    $this->throwError('Invalid hostname, ' . json_encode($data));
                 }
                 break;
 
             case 'ipv4':
                 if (null === filter_var($data, FILTER_VALIDATE_IP, FILTER_NULL_ON_FAILURE | FILTER_FLAG_IPV4)) {
-                    $this->throwError('Invalid IPv4 address, '.json_encode($data));
+                    $this->throwError('Invalid IPv4 address, ' . json_encode($data));
                 }
                 break;
 
             case 'ipv6':
                 if (null === filter_var($data, FILTER_VALIDATE_IP, FILTER_NULL_ON_FAILURE | FILTER_FLAG_IPV6)) {
-                    $this->throwError('Invalid IPv6 address, '.json_encode($data));
+                    $this->throwError('Invalid IPv6 address, ' . json_encode($data));
                 }
                 break;
 
             case 'uri':
                 if (null === filter_var($data, FILTER_VALIDATE_URL, FILTER_NULL_ON_FAILURE)) {
-                    $this->throwError('Invalid uri, '.json_encode($data));
+                    $this->throwError('Invalid uri, ' . json_encode($data));
                 }
                 break;
 
             default:
-                $this->throwError('Unknown format, '.json_encode($data));
+                $this->throwError('Unknown format, ' . json_encode($data));
         }
     }
 
-    protected function validateUnique($data)
-    {
+    protected function validateUnique($data) {
         $count = count($data);
         for ($i = 0; $i < $count; ++$i) {
             for ($j = $i + 1; $j < $count; ++$j) {
@@ -466,15 +447,14 @@ class Constraints
         return true;
     }
 
-    protected function match($regex, $string)
-    {
-         return preg_match('/'.$regex.'/', $string, $match);
+    protected function match($regex, $string) {
+        return preg_match('/' . $regex . '/', $string, $match);
     }
 
-    protected function throwError($msg)
-    {
-        $path = $this->path ?: '#';
+    protected function throwError($msg) {
+        $path = $this->path ? : '#';
         $error = sprintf("Property: %s. Error: %s", $path, $msg);
         throw new ValidationException($error);
     }
+
 }

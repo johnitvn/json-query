@@ -6,8 +6,8 @@ namespace johnitvn\jsonquery;
  * @author John Martin <john.itvn@gmail.com>
  * @since 1.0.0
  */
-class JsonDocument
-{
+class JsonDocument {
+
     public $data;
     public $schema;
     public $lastError;
@@ -16,33 +16,29 @@ class JsonDocument
     private $workingData;
     private $validator;
 
-    public function loadData($data, $noException = false)
-    {
-        $data = $this->getInput($data, false, $noException);
-        $this->data = $data ? Utils::dataCopy($data) : null;
+    public function loadData($data, $noException = false) {
+        $this->data = $this->getInput($data, false, $noException) ? JsonUtils::dataCopy($data) : null;
         $this->workingData = null;
         return empty($this->lastError);
     }
 
-    public function loadSchema($schema, $noException = false)
-    {
+    public function loadSchema($schema, $noException = false) {
         $this->schema = $this->getInput($schema, true, $noException);
         return empty($this->lastError);
     }
 
-    public function addValue($path, $value)
-    {
+    public function addValue($path, $value) {
         $this->lastError = null;
         $this->lastPushIndex = 0;
-        $pointers = is_array($path) ? $path : Utils::pathDecode($path);
-        $value = Utils::dataCopy($value);
+        $pointers = is_array($path) ? $path : JsonUtils::pathDecode($path);
+        $value = JsonUtils::dataCopy($value);
 
         if (!$pointers) {
             # empty path, add value to root
             if ($result = (is_object($value) || is_array($value)) && $this->checkData($value, true)) {
                 $this->data = $value;
             } else {
-                $this->lastError = $this->lastError ?: 'Value must be an object or array';
+                $this->lastError = $this->lastError ? : 'Value must be an object or array';
             }
 
             return $result;
@@ -53,7 +49,7 @@ class JsonDocument
             $this->workingData = null;
         } else {
             # data exists so copy it
-            $this->workingData = Utils::dataCopy($this->data);
+            $this->workingData = JsonUtils::dataCopy($this->data);
         }
 
         # create any new keys and get referenced element
@@ -77,14 +73,12 @@ class JsonDocument
         return $result;
     }
 
-    public function copyValue($fromPath, $toPath)
-    {
+    public function copyValue($fromPath, $toPath) {
         return $this->workMove($fromPath, $toPath, false);
     }
 
-    public function deleteValue($path)
-    {
-        $pointers = is_array($path) ? $path : Utils::pathDecode($path);
+    public function deleteValue($path) {
+        $pointers = is_array($path) ? $path : JsonUtils::pathDecode($path);
 
         if ($result = $this->hasValue($pointers, $dummy)) {
 
@@ -104,8 +98,7 @@ class JsonDocument
         return $result;
     }
 
-    public function getValue($path, $default = null)
-    {
+    public function getValue($path, $default = null) {
         if (!$this->hasValue($path, $value)) {
             $value = $default;
         }
@@ -113,37 +106,33 @@ class JsonDocument
         return $value;
     }
 
-    public function hasValue($path, &$value)
-    {
+    public function hasValue($path, &$value) {
         $result = false;
         $value = null;
 
-        $pointers = is_array($path) ? $path : Utils::pathDecode($path);
+        $pointers = is_array($path) ? $path : JsonUtils::pathDecode($path);
 
         if ($this->workGet($pointers, false)) {
-            $value = Utils::dataCopy($this->element);
+            $value = JsonUtils::dataCopy($this->element);
             $result = true;
         }
 
         return $result;
     }
 
-    public function moveValue($fromPath, $toPath)
-    {
+    public function moveValue($fromPath, $toPath) {
         return $this->workMove($fromPath, $toPath, true);
     }
 
-    public function tidy($order = false)
-    {
-        $this->data = Utils::dataPrune($this->data);
+    public function tidy($order = false) {
+        $this->data = JsonUtils::dataPrune($this->data);
         if ($order && $this->schema) {
-            $this->data = Utils::dataOrder($this->data, $this->schema->data);
+            $this->data = JsonUtils::dataOrder($this->data, $this->schema->data);
         }
     }
 
-    public function toJson($pretty, $tabs = false)
-    {
-        $json = Utils::dataToJson($this->data, $pretty);
+    public function toJson($pretty, $tabs = false) {
+        $json = JsonUtils::dataToJson($this->data, $pretty);
         if ($tabs && $pretty) {
             $json = preg_replace_callback('/^( +)/m', function($m) {
                 return str_repeat("\t", (int) strlen($m[1]) / 4);
@@ -153,18 +142,16 @@ class JsonDocument
         return $json;
     }
 
-    public function validate($lax = false)
-    {
+    public function validate($lax = false) {
         return $this->checkData($this->data, $lax);
     }
 
-    protected function getInput($input, $isSchema, $noException)
-    {
+    protected function getInput($input, $isSchema, $noException) {
         $this->lastError = null;
         $input = $this->getInputWork($input, $isSchema);
 
         if (false === $input) {
-            $this->lastError = $this->lastError ?: 'Invalid input';
+            $this->lastError = $this->lastError ? : 'Invalid input';
         }
 
         if ($this->lastError && !$noException) {
@@ -174,14 +161,13 @@ class JsonDocument
         return $this->lastError ? null : $input;
     }
 
-    protected function getInputWork($input, $isSchema)
-    {
+    protected function getInputWork($input, $isSchema) {
         if (is_string($input)) {
 
             if (!preg_match('/^(\{|\[)/', $input)) {
                 $input = @file_get_contents($input);
                 if (false === $input) {
-                    $this->lastError = 'Unable to open file: '.$input;
+                    $this->lastError = 'Unable to open file: ' . $input;
                     return false;
                 }
             }
@@ -203,20 +189,18 @@ class JsonDocument
                 $input = new Schema\Model($input);
             } catch (\RuntimeException $e) {
                 $result = false;
-                $this->lastError = 'Schema error: '.$e->getMessage();
+                $this->lastError = 'Schema error: ' . $e->getMessage();
             }
         }
 
         return $result ? $input : false;
     }
 
-    protected function pushKey($value)
-    {
-       return (bool) preg_match('/^((-)|(0+))$/', $value);
+    protected function pushKey($value) {
+        return (bool) preg_match('/^((-)|(0+))$/', $value);
     }
 
-    protected function arrayKey($value, &$index, $any = false)
-    {
+    protected function arrayKey($value, &$index, $any = false) {
         $index = null;
 
         if ($any && '-' === $value) {
@@ -228,11 +212,10 @@ class JsonDocument
         return null !== $index;
     }
 
-    protected function workAdd($pointers, &$arrayPush, &$addKey)
-    {
+    protected function workAdd($pointers, &$arrayPush, &$addKey) {
         $this->workGet($pointers, true);
         $arrayPush = false;
-        $addKey  = null;
+        $addKey = null;
 
         if (is_null($this->element)) {
             if (!$this->workAddElement($pointers)) {
@@ -258,7 +241,6 @@ class JsonDocument
                     if (!$this->workAddElement($pointers)) {
                         return;
                     }
-
                 } else {
 
                     $this->element->$key = null;
@@ -267,11 +249,9 @@ class JsonDocument
                     if (!$this->workAddElement($pointers)) {
                         return;
                     }
-
-                 }
-
+                }
             } else {
-                 # no more pointers. First check for array with final array key
+                # no more pointers. First check for array with final array key
 
                 if (is_array($this->element)) {
 
@@ -284,7 +264,6 @@ class JsonDocument
                         $this->lastError = 'Bad array index';
                         return;
                     }
-
                 } else {
                     $addKey = $key;
                 }
@@ -294,8 +273,7 @@ class JsonDocument
         return true;
     }
 
-    protected function workAddElement($pointers)
-    {
+    protected function workAddElement($pointers) {
         $arrayFirst = $this->pushKey($pointers[0]);
         $this->element = $arrayFirst ? array() : new \stdClass();
 
@@ -307,8 +285,7 @@ class JsonDocument
         return $result;
     }
 
-    protected function workGet(&$pointers, $forEdit)
-    {
+    protected function workGet(&$pointers, $forEdit) {
         if ($forEdit) {
             $this->element = &$this->workingData;
         } else {
@@ -330,7 +307,6 @@ class JsonDocument
                 if ($result = property_exists($this->element, $key)) {
                     $this->element = &$this->element->$key;
                 }
-
             } elseif ('array' === $type) {
 
                 if ($result = $this->arrayKey($key, $index)) {
@@ -345,13 +321,12 @@ class JsonDocument
             }
 
             array_shift($pointers);
-         }
+        }
 
-         return true;
+        return true;
     }
 
-    protected function workMove($fromPath, $toPath, $delete)
-    {
+    protected function workMove($fromPath, $toPath, $delete) {
         $result = false;
 
         if ($this->hasValue($fromPath, $value)) {
@@ -359,14 +334,13 @@ class JsonDocument
                 if ($delete) {
                     $this->deleteValue($fromPath);
                 }
-             }
+            }
         }
 
         return $result;
     }
 
-    protected function checkData($data, $lax = false)
-    {
+    protected function checkData($data, $lax = false) {
         if (!$this->schema) {
             return true;
         }
@@ -381,4 +355,5 @@ class JsonDocument
 
         return $result;
     }
+
 }

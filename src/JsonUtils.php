@@ -6,10 +6,9 @@ namespace johnitvn\jsonquery;
  * @author John Martin <john.itvn@gmail.com>
  * @since 1.0.0
  */
-class Utils
-{
-    public static function get($container, $key, $default = null)
-    {
+class Utils {
+
+    public static function get($container, $key, $default = null) {
         $result = $default;
 
         if (is_object($container)) {
@@ -21,23 +20,23 @@ class Utils
         return $result;
     }
 
-    public static function checkType($type, $value)
-    {
+    public static function checkType($type, $value) {
         $result = false;
 
         if ('number' === $type) {
             $result = is_float($value) || is_integer($value);
+        } elseif ('integer' === $type) {
+            $result = is_integer($value) || (is_float($value) && $value == round($value));
         } elseif ('boolean' === $type) {
             $result = is_bool($value);
-        } elseif (function_exists($func = 'is_'.$type)) {
+        } elseif (function_exists($func = 'is_' . $type)) {
             $result = call_user_func($func, $value);
         }
 
         return $result;
     }
 
-    public static function equals($var1, $var2)
-    {
+    public static function equals($var1, $var2) {
         $type1 = gettype($var1);
         $type2 = gettype($var2);
 
@@ -64,8 +63,7 @@ class Utils
         }
     }
 
-    public static function uniqueArray($data, $check = false)
-    {
+    public static function uniqueArray($data, $check = false) {
         $out = array();
         $count = count($data);
         $equals = array();
@@ -88,17 +86,15 @@ class Utils
         return $check ? true : $out;
     }
 
-    public static function pathAdd($path, $key)
-    {
+    public static function pathAdd($path, $key) {
         if (strlen($encoded = static::pathEncodeKey($key))) {
-            $encoded = '/'.$encoded;
+            $encoded = '/' . $encoded;
         }
 
-        return $path.$encoded;
+        return $path . $encoded;
     }
 
-    public static function pathDecode($path)
-    {
+    public static function pathDecode($path) {
         $keys = explode('/', $path);
         array_shift($keys);
 
@@ -109,8 +105,7 @@ class Utils
         return $keys;
     }
 
-    public static function pathEncode($keys)
-    {
+    public static function pathEncode($keys) {
         $result = '';
         foreach ((array) $keys as $value) {
             $result = static::pathAdd($result, $value);
@@ -119,13 +114,11 @@ class Utils
         return $result;
     }
 
-    public static function pathEncodeKey($key)
-    {
+    public static function pathEncodeKey($key) {
         return str_replace('/', '~1', str_replace('~', '~0', strval($key)));
     }
 
-    public static function dataCopy($data, $callback = null)
-    {
+    public static function dataCopy($data, $callback = null) {
         if ($callback) {
             $data = call_user_func_array($callback, array($data));
         }
@@ -135,12 +128,11 @@ class Utils
             $result = array();
 
             foreach ($data as $key => $value) {
-                $object = $object ?: is_string($key);
+                $object = $object ? : is_string($key);
                 $result[$key] = static::dataCopy($value, $callback);
             }
 
-            $result = $object ? (object) $result: $result;
-
+            $result = $object ? (object) $result : $result;
         } else {
             $result = $data;
         }
@@ -148,14 +140,12 @@ class Utils
         return $result;
     }
 
-    public static function dataPrune($data)
-    {
+    public static function dataPrune($data) {
         $props = 0;
-        return  static::workPrune($data, $props);
+        return static::workPrune($data, $props);
     }
 
-    public static function dataOrder($data, $schema)
-    {
+    public static function dataOrder($data, $schema) {
         if (is_object($data) && ($properties = Utils::get($schema, 'properties'))) {
             $result = array();
 
@@ -166,15 +156,13 @@ class Utils
                 }
             }
             $result = (object) array_merge($result, (array) $data);
-
         } elseif (is_array($data) && ($items = Utils::get($schema, 'items'))) {
             $objSchema = is_object($schema->items) ? $schema->items : null;
 
             foreach ($data as $item) {
-                $itemSchema = $objSchema ?: (next($schema->items) ?: null);
+                $itemSchema = $objSchema ? : (next($schema->items) ? : null);
                 $result[] = static::dataOrder($item, $itemSchema);
             }
-
         } else {
             $result = $data;
         }
@@ -183,14 +171,13 @@ class Utils
     }
 
     /**
-    * Encodes data into JSON
-    *
-    * @param mixed $data The data to be encoded
-    * @param boolean $pretty Format the output
-    * @return string Encoded json
-    */
-    public static function dataToJson($data, $pretty)
-    {
+     * Encodes data into JSON
+     *
+     * @param mixed $data The data to be encoded
+     * @param boolean $pretty Format the output
+     * @return string Encoded json
+     */
+    public static function dataToJson($data, $pretty) {
         $newLine = $pretty ? chr(10) : null;
 
         if (version_compare(PHP_VERSION, '5.4', '>=')) {
@@ -221,7 +208,6 @@ class Utils
                 $escaped = '\\' === $char ? !$escaped : false;
 
                 continue;
-
             } elseif ($string) {
                 # end of the json string
                 $string .= $char;
@@ -271,8 +257,7 @@ class Utils
         return static::finalizeJson($result, $newLine);
     }
 
-    protected static function equalsObject($obj1, $obj2)
-    {
+    protected static function equalsObject($obj1, $obj2) {
         # get_object_vars fails on objects with digit keys
         if (count((array) $obj1) !== count((array) $obj2)) {
             return false;
@@ -282,13 +267,12 @@ class Utils
             if (!isset($obj2->$key) || !static::equals($value, $obj2->$key)) {
                 return false;
             }
-         }
+        }
 
         return true;
     }
 
-    protected static function equalsArray($arr1, $arr2)
-    {
+    protected static function equalsArray($arr1, $arr2) {
         $count = count($arr1);
 
         if ($count !== count($arr2)) {
@@ -299,20 +283,19 @@ class Utils
             if (!static::equals($arr1[$i], $arr2[$i])) {
                 return false;
             }
-         }
+        }
 
         return true;
     }
 
-    protected static function workPrune($data, &$props)
-    {
+    protected static function workPrune($data, &$props) {
         if (($object = is_object($data)) || is_array($data)) {
 
             $result = array();
             $currentProps = $props;
 
             foreach ($data as $key => $value) {
-                $object = $object ?: is_string($key);
+                $object = $object ? : is_string($key);
                 $value = static::workPrune($value, $props);
 
                 if ($props > $currentProps) {
@@ -322,8 +305,7 @@ class Utils
             }
 
             $props = count($result);
-            $result = $object ? (object) $result: $result;
-
+            $result = $object ? (object) $result : $result;
         } else {
             ++$props;
             $result = $data;
@@ -332,8 +314,7 @@ class Utils
         return $result;
     }
 
-    private static function finalizeJson($json, $newline)
-    {
+    private static function finalizeJson($json, $newline) {
         if ($newline) {
             # collapse empty {} and []
             $json = preg_replace_callback('#(\{\s+\})|(\[\s+\])#', function($match) {
@@ -345,4 +326,5 @@ class Utils
 
         return $json;
     }
+
 }

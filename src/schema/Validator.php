@@ -3,15 +3,15 @@
 namespace johnitvn\jsonquery\schema;
 
 /**
+ * The validator for validate json schema
  * @author John Martin <john.itvn@gmail.com>
  * @since 1.0.0
  */
-class Validator
-{
+class Validator {
+
     public $error;
 
-    public function check($data, $model, $lax = false)
-    {
+    public function check($data, $model, $lax = false) {
         $result = true;
         $this->error = '';
         $constraints = new Constraints($lax);
@@ -25,4 +25,5 @@ class Validator
 
         return $result;
     }
+
 }

@@ -2,7 +2,7 @@
     "name": "johnitvn/json-query",
     "description": "Parser, create, edit, query and do validate json file.",
     "type": "library",
-    "keywords": ["json","json-query","json parser","json creator", "schema"],
+    "keywords": ["json", "json-query", "json parser", "json creator", "schema"],
     "license": "Apache-2.0",
     "authors": [
         {
@@ -16,11 +16,11 @@
         "source": "https://github.com/johnitvn/json-query"
     },
     "require": {
-       "php": ">=5.3.2"
+        "php": ">=5.3.2"
     },
     "autoload": {
         "psr-4": {
             "johnitvn\\jsonquery\\": "src/"
         }
-    },  
+    }
 }

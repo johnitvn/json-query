@@ -5,25 +5,25 @@ namespace johnitvn\jsonquery\schema;
 use johnitvn\jsonquery\JsonUtils as Utils;
 
 /**
+ * The model class
  * @author John Martin <john.itvn@gmail.com>
  * @since 1.0.0
  */
-class Model
-{
+class Model {
+
     public $data;
+
     /**
-    * @var array
-    */
+     * @var array
+     */
     protected $references = array();
 
-    public function __construct($input)
-    {
+    public function __construct($input) {
         $this->data = Utils::dataCopy((object) $input, array($this, 'initCallback'));
         $this->resolveReferences();
     }
 
-    public function find($schema, array $keys)
-    {
+    public function find($schema, array $keys) {
         while ($keys && $schema) {
             $type = gettype($schema);
             $key = array_shift($keys);
@@ -32,13 +32,12 @@ class Model
                 $key = (int) $key;
             }
             $schema = Utils::get($schema, $key);
-         }
+        }
 
         return $schema;
     }
 
-    public function initCallback($data)
-    {
+    public function initCallback($data) {
         if ($ref = Utils::get($data, '$ref')) {
 
             if (is_string($ref) && 0 === strpos($ref, '#')) {
@@ -51,8 +50,7 @@ class Model
         return $data;
     }
 
-    public function resolveCallback($data)
-    {
+    public function resolveCallback($data) {
         if ($ref = Utils::get($data, '$ref')) {
             $data = Utils::get($this->references, $ref);
         }
@@ -60,8 +58,7 @@ class Model
         return $data;
     }
 
-    private function resolveReferences()
-    {
+    private function resolveReferences() {
         if ($this->references) {
 
             foreach (array_keys($this->references) as $ref) {
@@ -70,7 +67,7 @@ class Model
                 if ($schema = $this->find($this->data, $keys)) {
                     $this->references[$ref] = $schema;
                 } else {
-                    throw new \RuntimeException('Unable to find ref '.$ref);
+                    throw new \RuntimeException('Unable to find ref ' . $ref);
                 }
             }
 
@@ -83,15 +80,14 @@ class Model
         }
     }
 
-    private function resolve($schema, $parents = array())
-    {
+    private function resolve($schema, $parents = array()) {
         $result = $schema;
 
         if ($ref = Utils::get($schema, '$ref')) {
             $refSchema = Utils::get($this->references, $ref);
 
             if (in_array($ref, $parents)) {
-                throw new \RuntimeException('Circular reference to ref '.$ref);
+                throw new \RuntimeException('Circular reference to ref ' . $ref);
             } elseif (Utils::get($refSchema, '$ref')) {
                 $parents[] = $ref;
                 $result = $this->resolve($refSchema, $parents);
@@ -102,4 +98,5 @@ class Model
 
         return $result;
     }
+
 }
