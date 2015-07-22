@@ -3,7 +3,7 @@
 namespace johnitvn\jsonquery;
 
 /**
- * @author John Martin <johnitvn@gmail.com>
+ * @author John Martin <john.itvn@gmail.com>
  * @since 1.0.0
  */
 class JsonDocument {

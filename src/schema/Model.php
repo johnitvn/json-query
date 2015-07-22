@@ -5,7 +5,7 @@ namespace johnitvn\jsonquery\schema;
 use \johnitvn\jsonquery\JsonUtils;
 
 /**
- * @author John Martin <johnitvn@gmail.com>
+ * @author John Martin <john.itvn@gmail.com>
  * @since 1.0.0
  */
 class Model {
