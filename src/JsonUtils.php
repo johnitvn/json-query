@@ -6,7 +6,7 @@ namespace johnitvn\jsonquery;
  * @author John Martin <john.itvn@gmail.com>
  * @since 1.0.0
  */
-class Utils {
+class JsonUtils {
 
     public static function get($container, $key, $default = null) {
         $result = $default;
